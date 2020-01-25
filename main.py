@@ -1,17 +1,11 @@
-import logging
 from settings import settings
 from mmpy_bot import bot
 
-
-logging.basicConfig(**{
-    'format': '[%(asctime)s] %(message)s',
-    'datefmt': '%m/%d/%Y %H:%M:%S',
-    'level': logging.INFO,
-})
+import logging
 
 
 class RcosBot(bot.Bot):
-    async def __init__(self):
+    def __init__(self):
         self._client = bot.MattermostClient(
             settings.BOT_URL,
             settings.BOT_TEAM,
@@ -25,4 +19,5 @@ class RcosBot(bot.Bot):
 
 
 if __name__ == '__main__':
+	logging.basicConfig(level=logging.INFO)
     RcosBot().run()
