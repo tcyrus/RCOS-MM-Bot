@@ -39,7 +39,7 @@ async def set_password(message, pas):
                 SET password = EXCLUDED.password
             ''', uid, pas, settings.BOT_SECRET)
 
-    message.reply('Update Password')
+    message.react('+1')
 
 
 @respond_to('^clear_creds')
@@ -52,7 +52,7 @@ async def set_username(message):
         async with conn.transaction():
             await conn.execute('DELETE FROM rcos_creds WHERE uid = $1', uid)
 
-    message.reply('Cleared Credentials')
+    message.react('+1')
 
 
 @respond_to('^attend (.*)')
@@ -95,4 +95,4 @@ async def attend(message, code):
 
     logging.info(f'User "{email}" submitted dayCode "{code}"')
 
-    message.reply(result)
+    message.comment(result)
