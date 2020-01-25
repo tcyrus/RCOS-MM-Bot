@@ -95,4 +95,4 @@ async def attend(message, code):
 
     logging.info(f'User "{email}" submitted dayCode "{code}"')
 
-    message.reply(f'attend: {code}')
+    message.reply(result)

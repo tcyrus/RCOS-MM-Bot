@@ -8,8 +8,12 @@ verify_ssl = true
 [packages]
 mmpy-bot = "*"
 syncasync = "*"
-asyncpg = "*"
 aiohttp = "*"
+asyncpg = "*"
 
 [requires]
 python_version = "3.8"
+
+[scripts]
+build = "docker-compose build"
+deploy = "docker-compose up"
