@@ -8,5 +8,3 @@ BOT_SECRET = os.environ.get('MATTERMOST_BOT_SECRET', '')
 BOT_TOKEN = None
 BOT_TEAM = 'rcos'
 PLUGINS = ['plugins']
-
-os.environ['MATTERMOST_BOT_SETTINGS_MODULE'] = 'settings.settings'

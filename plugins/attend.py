@@ -15,10 +15,11 @@ db = async_to_sync(asyncpg.create_pool)()
 @atexit.register
 @async_to_sync
 async def quit():
-    try:
-        await asyncio.wait_for(db.close(), timeout=10.0)
-    except asyncio.TimeoutError:
-        db.terminate()
+    if db is not None:
+        try:
+            await asyncio.wait_for(db.close(), timeout=10.0)
+        except asyncio.TimeoutError:
+            db.terminate()
 
 
 @respond_to('^set_password (.*)')
@@ -44,7 +45,7 @@ async def set_password(message, pas):
 @respond_to('^clear_creds')
 @allow_only_direct_message()
 @async_to_sync
-def set_username(message):
+async def set_username(message):
     uid = message.get_user_id()
 
     async with db.acquire() as conn:
