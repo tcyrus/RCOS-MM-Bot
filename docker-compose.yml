@@ -1,0 +1,27 @@
+version: '3.7'
+
+services:
+#  db:
+#    image: postgres
+#    restart: always
+#    environment:
+#      POSTGRES_USER: "${POSTGRES_USER}"
+#      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+#      POSTGRES_DB: "${POSTGRES_DB}"
+#    volumes:
+#      - ./postgres-data:/var/lib/postgresql/data
+#      - ./init-pg:/docker-entrypoint-initdb.d
+
+  bot:
+    build: .
+    image: tcyrus/rcos-mm-bot
+    network_mode: "bridge"
+    extra_hosts:
+      - "db:172.17.0.1"
+    environment:
+      PGHOST: "db"
+      PGUSER: "${POSTGRES_USER}"
+      PGDATABASE: "${POSTGRES_DB}"
+      PGPASSWORD: "${POSTGRES_PASSWORD}"
+      DISCORD_BOT_TOKEN: "${DISCORD_BOT_TOKEN}"
+    command: [ "wait-for-it", "db:5432", "--", "python", "./main.py" ]
