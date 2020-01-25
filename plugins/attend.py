@@ -1,23 +1,11 @@
 from mmpy_bot.utils import allow_only_direct_message
 from mmpy_bot.bot import respond_to
+from mmpy_bot import settings
+
+import logging
+import psycopg2
 
 conn = psycopg2.connect("")
-
-@respond_to('^set_username (.*)')
-@allow_only_direct_message()
-def set_username(message, user):
-    uid = message.get_user_id()
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO rcos_creds
-            (uid, username)
-            VALUES (%s, %s)
-            ON CONFLICT (uid)
-            DO UPDATE
-            SET username = EXCLUDED.username
-        """, (uid, user))
-    conn.commit()
-    message.reply('Updated Username')
 
 
 @respond_to('^set_password (.*)')
@@ -28,11 +16,14 @@ def set_password(message, pas):
         cur.execute("""
             INSERT INTO rcos_creds
             (uid, password)
-            VALUES (%s, %s)
+            VALUES (
+                %(uid)s,
+                pgp_sym_encrypt(%(pass)s, %(secret)s || %(uid)s)
+            )
             ON CONFLICT (uid)
             DO UPDATE
             SET password = EXCLUDED.password
-        """, (uid, user))
+        """, {'uid': uid, 'pass': pas, 'secret': settings.BOT_SECRET})
     conn.commit()
     message.reply('Update Password')
 
@@ -51,9 +42,35 @@ def set_username(message):
 @allow_only_direct_message()
 def attend(message, code):
     uid = message.get_user_id()
-    username, password = None, None
+    email = message.get_user_mail()
+    password = None
     with conn.cursor() as cur:
-        cur.execute("SELECT username, password FROM rcos_creds WHERE uid = %s", (uid))
-        username, password = cur.fetchone()
-    message.reply('attend: %s' % code)
+        cur.execute("""
+            SELECT
+            pgp_sym_decrypt(password, %(secret)s || %(uid)s)
+            FROM rcos_creds
+            WHERE uid = %(uid)s
+        """, {'uid': uid, 'secret': settings.BOT_SECRET})
+        password = cur.fetchone()
+
+    token = requests.post(
+        'https://rcos.io/auth/local',
+        data={'email': email, 'password': password}
+    ).json()['token']
+
+    password = None
+
+    logging.info(f'User "{email}" obtained token "{token}"')
+
+    r = requests.post(
+        "https://rcos.io/api/attendance/attend",
+        data={'dayCode': code},
+        cookies={'token': token}
+    )
+
+    logging.info(f'User "{email}" submitted dayCode "{code}"')
+
+    logging.info(f'User "{email}" req: "{r.text}"')
+
+    message.reply(f'attend: {code}')
 
