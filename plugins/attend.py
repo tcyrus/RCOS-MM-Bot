@@ -38,9 +38,12 @@ async def set_password(message, pas):
 async def clear_creds(message):
     uid = message.get_user_id()
 
-    async with asyncpg.connect() as conn:
-        async with conn.transaction():
-            await conn.execute('DELETE FROM rcos_creds WHERE uid = $1', uid)
+    conn = await asyncpg.connect()
+
+    async with conn.transaction():
+        await conn.execute('DELETE FROM rcos_creds WHERE uid = $1', uid)
+
+    await conn.close()
 
     message.react('+1')
 
@@ -53,15 +56,17 @@ async def attend(message, code):
     email = message.get_user_mail()
 
     password = None
-    async with asyncpg.connect() as conn:
-        async with conn.transaction():
-            password = await conn.fetch('''
-                SELECT
-                pgp_sym_decrypt(password, $2 || $1)
-                FROM rcos_creds
-                WHERE uid = $1
-            ''', uid, settings.BOT_SECRET)
+    conn = await asyncpg.connect()
 
+    async with conn.transaction():
+        password = await conn.fetchval('''
+            SELECT
+            pgp_sym_decrypt(password, $2 || $1)
+            FROM rcos_creds
+            WHERE uid = $1
+        ''', uid, settings.BOT_SECRET)
+
+    await conn.close()
 
     async with aiohttp.ClientSession() as session:
         token = None
