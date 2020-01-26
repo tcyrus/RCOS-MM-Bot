@@ -15,20 +15,19 @@ import aiohttp
 async def set_password(message, pas):
     uid = message.get_user_id()
 
-    async with asyncpg.connect(
-        host=settings.POSTGRES_HOST,
-        user=settings.POSTGRES_USER,
-        database=settings.POSTGRES_DB,
-        password=settings.POSTGRES_PASSWORD) as conn:
-        async with conn.transaction():
-            await conn.execute('''
-                INSERT INTO rcos_creds
-                (uid, password)
-                VALUES ($1, pgp_sym_encrypt($2, $3 || $1))
-                ON CONFLICT (uid)
-                DO UPDATE
-                SET password = EXCLUDED.password
-            ''', uid, pas, settings.BOT_SECRET)
+    await conn = asyncpg.connect():
+
+    async with conn.transaction():
+        await conn.execute('''
+            INSERT INTO rcos_creds
+            (uid, password)
+            VALUES ($1, pgp_sym_encrypt($2, $3 || $1))
+            ON CONFLICT (uid)
+            DO UPDATE
+            SET password = EXCLUDED.password
+        ''', uid, pas, settings.BOT_SECRET)
+
+    await conn.close()
 
     message.react('+1')
 
