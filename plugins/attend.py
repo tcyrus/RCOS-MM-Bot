@@ -15,7 +15,7 @@ import aiohttp
 async def set_password(message, pas):
     uid = message.get_user_id()
 
-    await conn = asyncpg.connect():
+    await conn = asyncpg.connect()
 
     async with conn.transaction():
         await conn.execute('''
