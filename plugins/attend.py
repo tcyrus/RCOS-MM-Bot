@@ -5,21 +5,8 @@ from mmpy_bot import settings
 from syncasync import async_to_sync
 
 import logging
-import atexit
 import asyncpg
 import aiohttp
-
-db = async_to_sync(asyncpg.create_pool)()
-
-
-@atexit.register
-@async_to_sync
-async def quit():
-    if db is not None:
-        try:
-            await asyncio.wait_for(db.close(), timeout=10.0)
-        except asyncio.TimeoutError:
-            db.terminate()
 
 
 @respond_to('^set_password (.*)')
@@ -28,7 +15,7 @@ async def quit():
 async def set_password(message, pas):
     uid = message.get_user_id()
 
-    async with db.acquire() as conn:
+    async with asyncpg.connect() as conn:
         async with conn.transaction():
             await conn.execute('''
                 INSERT INTO rcos_creds
@@ -48,7 +35,7 @@ async def set_password(message, pas):
 async def set_username(message):
     uid = message.get_user_id()
 
-    async with db.acquire() as conn:
+    async with asyncpg.connect() as conn:
         async with conn.transaction():
             await conn.execute('DELETE FROM rcos_creds WHERE uid = $1', uid)
 
@@ -63,7 +50,7 @@ async def attend(message, code):
     email = message.get_user_mail()
 
     password = None
-    async with db.acquire() as conn:
+    async with asyncpg.connect() as conn:
         async with conn.transaction():
             password = await conn.fetch('''
                 SELECT
