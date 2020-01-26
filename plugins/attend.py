@@ -15,7 +15,11 @@ import aiohttp
 async def set_password(message, pas):
     uid = message.get_user_id()
 
-    async with asyncpg.connect() as conn:
+    async with asyncpg.connect(
+        host=settings.POSTGRES_HOST,
+        user=settings.POSTGRES_USER,
+        database=settings.POSTGRES_DB,
+        password=settings.POSTGRES_PASSWORD) as conn:
         async with conn.transaction():
             await conn.execute('''
                 INSERT INTO rcos_creds
@@ -32,7 +36,7 @@ async def set_password(message, pas):
 @respond_to('^clear_creds')
 @allow_only_direct_message()
 @async_to_sync
-async def set_username(message):
+async def clear_creds(message):
     uid = message.get_user_id()
 
     async with asyncpg.connect() as conn:
