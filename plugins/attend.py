@@ -69,32 +69,33 @@ async def attend(message, code):
 
     await conn.close()
 
-    browser = Browser('remote', command_executor="http://selenium:4444/wd/hub")
+    token = ''
 
-    browser.visit('https://rcos.io/login?referrer=~2Fattend')
+    with Browser(
+        driver_name='remote',
+        browser='firefox',
+        command_executor="http://selenium:4444/wd/hub"
+    ) as browser:
+        browser.visit('https://rcos.io/login?referrer=~2Fattend')
 
-    if not browser.is_element_present_by_name('email', wait_time=10):
-        logging.info("Login page failed to load")
-        message.comment("Login page failed to load")
-        return
+        if not browser.is_element_present_by_name('email', wait_time=10):
+            logging.info("Login page failed to load")
+            message.comment("Login page failed to load")
+            return
 
-    browser.fill_form({'email': email, 'password': password})
-    browser.find_by_css('.btn-login')[0].click()
+        browser.fill_form({'email': email, 'password': password})
+        browser.find_by_css('.btn-login')[0].click()
 
-    if not browser.is_element_present_by_id('dayCodeInput', wait_time=10):
-        logging.info("Login failed")
-        message.comment("Login failed")
-        return
+        if not browser.is_element_present_by_id('dayCodeInput', wait_time=10):
+            logging.info("Login failed")
+            message.comment("Login failed")
+            return
 
-    password = None
+        print(browser.cookies['token'])
+        token = browser.cookies['token']
 
-    print(browser.cookies['token'])
-    token = browser.cookies['token']
-
-    #browser.find_by_id('dayCodeInput')[0].fill(code)
-    #browser.find_by_css('.dayCodeForm .btn')[0].click()
-
-    browser.quit()
+        #browser.find_by_id('dayCodeInput')[0].fill(code)
+        #browser.find_by_css('.dayCodeForm .btn')[0].click()
 
     result = ''
     async with aiohttp.ClientSession() as session:
