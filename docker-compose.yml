@@ -14,6 +14,7 @@ services:
 
   firefox:
     image: selenium/standalone-firefox
+    network_mode: "bridge"
 
   bot:
     build: .
