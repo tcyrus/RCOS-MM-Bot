@@ -7,6 +7,7 @@ from syncasync import async_to_sync
 import logging
 import asyncpg
 import aiohttp
+from splinter import Browser
 
 
 @respond_to('^set_password (.*)')
@@ -68,26 +69,43 @@ async def attend(message, code):
 
     await conn.close()
 
+    browser = Browser('remote', url="firefox:4444/wd/hub", browser='firefox')
+
+    browser.visit('https://rcos.io/login?referrer=~2Fattend')
+
+    if not browser.is_element_present_by_name('email', wait_time=10):
+        logging.info("Login page failed to load")
+        message.comment("Login page failed to load")
+        return
+
+    browser.fill_form({'email': email, 'password': password})
+    browser.find_by_css('.btn-login')[0].click()
+
+    if not browser.is_element_present_by_id('dayCodeInput', wait_time=10):
+        logging.info("Login failed")
+        message.comment("Login failed")
+        return
+
+    password = None
+
+    print(browser.cookies['token'])
+    token = browser.cookies['token']
+
+    browser.quit()
+    #browser.find_by_id('dayCodeInput')[0].fill(code)
+    #browser.find_by_css('.dayCodeForm .btn')[0].click()
+
+    result = ''
     async with aiohttp.ClientSession() as session:
-        token = None
-        async with session.post(
-            'https://rcos.io/auth/local',
-            json={'email': email, 'password': password}) as r1:
-            token = (await r1.json())['token']
-
-        password = None
-
-        logging.info(f'User "{email}" obtained token "{token}"')
-
-        result = None
         async with session.post(
             'https://rcos.io/api/attendance/attend',
             cookies={'token': token},
+            headers={"Authorization": f"Bearer {token}"},
             json={'dayCode': code}) as r2:
             result = await r2.text()
 
-        logging.info(f'User "{email}" req: "{result}"')
-
     logging.info(f'User "{email}" submitted dayCode "{code}"')
 
-    message.comment(result)
+    logging.info(f'User "{email}" req: "{result}"')
+
+    message.react('+1')

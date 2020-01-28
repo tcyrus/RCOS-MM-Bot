@@ -10,6 +10,7 @@ mmpy-bot = "*"
 syncasync = "*"
 aiohttp = "*"
 asyncpg = "*"
+splinter = "*"
 
 [requires]
 python_version = "3.8"

@@ -12,6 +12,9 @@ services:
 #      - ./postgres-data:/var/lib/postgresql/data
 #      - ./init-pg:/docker-entrypoint-initdb.d
 
+  firefox:
+    image: selenium/standalone-firefox
+
   bot:
     build: .
     image: tcyrus/rcos-mm-bot
