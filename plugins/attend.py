@@ -69,7 +69,7 @@ async def attend(message, code):
 
     await conn.close()
 
-    browser = Browser('remote', command_executor="selenium:4444/wd/hub")
+    browser = Browser('remote', command_executor="http://selenium:4444/wd/hub")
 
     browser.visit('https://rcos.io/login?referrer=~2Fattend')
 

@@ -11,6 +11,7 @@ syncasync = "*"
 aiohttp = "*"
 asyncpg = "*"
 splinter = "*"
+selenium = "*"
 
 [requires]
 python_version = "3.8"
