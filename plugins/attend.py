@@ -69,7 +69,7 @@ async def attend(message, code):
 
     await conn.close()
 
-    browser = Browser('remote', url="firefox:4444/wd/hub", browser='firefox')
+    browser = Browser('remote', command_executor="selenium:4444/wd/hub")
 
     browser.visit('https://rcos.io/login?referrer=~2Fattend')
 
@@ -91,9 +91,10 @@ async def attend(message, code):
     print(browser.cookies['token'])
     token = browser.cookies['token']
 
-    browser.quit()
     #browser.find_by_id('dayCodeInput')[0].fill(code)
     #browser.find_by_css('.dayCodeForm .btn')[0].click()
+
+    browser.quit()
 
     result = ''
     async with aiohttp.ClientSession() as session:

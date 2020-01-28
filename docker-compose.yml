@@ -12,7 +12,7 @@ services:
 #      - ./postgres-data:/var/lib/postgresql/data
 #      - ./init-pg:/docker-entrypoint-initdb.d
 
-  firefox:
+  selenium:
     image: selenium/standalone-firefox
 
   bot:
